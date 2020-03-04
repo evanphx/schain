@@ -46,6 +46,8 @@ func filePath(name string) string {
 	return path
 }
 
+var enc = base64.RawURLEncoding
+
 func setupKey() []byte {
 	user := os.Getenv("SCHAIN_KEY")
 	if user == "" {
@@ -58,7 +60,7 @@ func setupKey() []byte {
 			log.Fatal(err)
 		}
 	} else {
-		key, err := base64.RawURLEncoding.DecodeString(skey)
+		key, err := enc.DecodeString(skey)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -75,7 +77,7 @@ func setupKey() []byte {
 		log.Fatal(err)
 	}
 
-	err = keyring.Set(KeyringService, user, base64.RawURLEncoding.EncodeToString(key))
+	err = keyring.Set(KeyringService, user, enc.EncodeToString(key))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -236,10 +238,18 @@ func get() {
 	log.Fatal(err)
 }
 
+func export() {
+	key := setupKey()
+	fmt.Println(enc.EncodeToString(key))
+}
+
 func main() {
-	if os.Args[1] == "-s" {
+	switch os.Args[1] {
+	case "-s":
 		set()
-	} else {
+	case "--export":
+		export()
+	default:
 		get()
 	}
 }
